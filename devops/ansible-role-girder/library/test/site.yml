@@ -1,0 +1,18 @@
+---
+- hosts: all
+  vars:
+    - girder_web: false
+
+  roles:
+    - role: Stouts.mongodb
+      become: true
+      become_user: root
+    - role: girder
+
+  post_tasks:
+    - name: Ensure girder client is installed
+      pip:
+        name: girder-client
+        state: latest
+      become: true
+      become_user: root
