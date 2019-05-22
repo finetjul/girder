@@ -58,6 +58,31 @@ ItemView.prototype.events['click .g-dicom-parse-item'] = function () {
         });
 };
 
+ItemView.prototype.events['click .g-dicom-process-item'] = function () {
+    restRequest({
+        method: 'POST',
+        url: `item/${this.model.id}/simple_job`,
+        error: null
+    })
+        .done((resp) => {
+            // Show up a message to alert the user it was done
+            events.trigger('g:alert', {
+                icon: 'ok',
+                text: 'Dicom item processed.',
+                type: 'success',
+                timeout: 4000
+            });
+        })
+        .fail((resp) => {
+            events.trigger('g:alert', {
+                icon: 'cancel',
+                text: 'Failed to process.',
+                type: 'danger',
+                timeout: 4000
+            });
+        });
+};
+
 SearchFieldWidget.addMode(
     'dicom',
     ['item'],
