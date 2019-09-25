@@ -53,7 +53,7 @@ function setAuthorizationHeader(header) {
 // Initialize the Authorization header to use (at JS load time)
 // This could be overridden when the App is started, but we need sensible defaults so models, etc.
 // can be easily used without having to start an App or explicitly set these values
-setAuthorizationHeader('Authorization');
+setAuthorizationHeader('Girder-Authorization');
 
 /**
  * Make a request to the REST API.
