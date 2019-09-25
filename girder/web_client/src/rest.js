@@ -6,6 +6,7 @@ import events from '@girder/core/events';
 import { getCurrentToken, cookie } from '@girder/core/auth';
 
 let apiRoot;
+let authorizationHeader;
 var uploadHandlers = {};
 var uploadChunkSize = 1024 * 1024 * 64; // 64MB
 
@@ -37,6 +38,22 @@ function setApiRoot(root) {
 setApiRoot(
     $('#g-global-info-apiroot').text().replace('%HOST%', window.location.origin) || '/api/v1'
 );
+
+/**
+ * Get the authorization header to use. Authorization if none is set.
+ */
+function getAuthorizationHeader() {
+    return authorizationHeader;
+}
+
+function setAuthorizationHeader(header) {
+    authorizationHeader = header;
+}
+
+// Initialize the Authorization header to use (at JS load time)
+// This could be overridden when the App is started, but we need sensible defaults so models, etc.
+// can be easily used without having to start an App or explicitly set these values
+setAuthorizationHeader('Authorization');
 
 /**
  * Make a request to the REST API.
@@ -205,6 +222,7 @@ function setUploadChunkSize(val) {
 export {
     getApiRoot,
     setApiRoot,
+    getAuthorizationHeader,
     uploadHandlers,
     restRequest,
     numberOutstandingRestRequests,
