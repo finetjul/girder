@@ -125,9 +125,9 @@ class User(AccessControlledModel):
             # an email address from a login
             raise ValidationException('Login may not contain "@".', 'login')
 
-        if not re.match(r'^[a-z][\da-z\-\.]{3,}$', login):
+        if not re.match(r'^[a-z][\da-z\-\.]{2,}$', login):
             raise ValidationException(
-                'Login must be at least 4 characters, start with a letter, and may only contain '
+                'Login must be at least 3 characters, start with a letter, and may only contain '
                 'letters, numbers, dashes, and dots.', 'login')
 
     def filter(self, doc, user, additionalKeys=None):
