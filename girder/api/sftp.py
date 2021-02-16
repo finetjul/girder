@@ -188,6 +188,7 @@ class _SftpRequestHandler(socketserver.BaseRequestHandler):
         securityOptions = self.transport.get_security_options()
         securityOptions.digests = ('hmac-sha1', 'hmac-sha2-256')
         securityOptions.compression = ('zlib@openssh.com', 'none')
+        securityOptions.ciphers = ('aes128-ctr', 'aes192-ctr', 'aes256-ctr')
 
         self.transport.add_server_key(self.server.hostKey)
         self.transport.set_subsystem_handler(
