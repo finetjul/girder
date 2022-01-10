@@ -1,6 +1,5 @@
 const path = require('path');
 
-require('colors');
 const mkdirp = require('mkdirp');
 const toposort = require('toposort');
 const _ = require('underscore');
