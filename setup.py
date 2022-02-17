@@ -41,6 +41,9 @@ installReqs = [
     'python-dateutil',
     'pytz',
     'requests',
+
+    # To fix a bug caused by last version of SetupTools (60.9.2)
+    'setuptools==59.6.0'
 ]
 
 extrasReqs = {
