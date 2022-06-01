@@ -13,7 +13,6 @@ import traceback
 import types
 import unicodedata
 import urllib.parse
-import uuid
 import fnmatch
 
 from dogpile.cache.util import kwarg_function_key_generator
@@ -640,8 +639,6 @@ def endpoint(fun):
     def endpointDecorator(self, *path, **params):
         _setCommonCORSHeaders()
         cherrypy.lib.caching.expires(0)
-        cherrypy.request.girderRequestUid = str(uuid.uuid4())
-        setResponseHeader('Girder-Request-Uid', cherrypy.request.girderRequestUid)
 
         try:
             _preventRepeatedParams(params)
