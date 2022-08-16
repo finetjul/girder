@@ -37,7 +37,7 @@ class FileHandle:
         self._pos = None
         # If a read is requested that is longer than the specified size, raise
         # an exception.  This prevents unbounded memory use.
-        self._maximumReadSize = 16 * 1024 * 1024
+        self._maximumReadSize = 500 * 1024 * 1024
 
         self.seek(0)
 
