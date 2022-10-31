@@ -11,6 +11,7 @@ __license__ = 'Apache 2.0'
 
 import cherrypy
 import functools
+import inspect
 import io
 import logging
 import logging.handlers
@@ -18,7 +19,7 @@ import os
 import sys
 import traceback
 
-from girder.constants import LOG_ROOT, MAX_LOG_SIZE, LOG_BACKUP_COUNT, TerminalColor
+from girder.constants import LOG_ROOT, MAX_LOG_SIZE, LOG_BACKUP_COUNT, ServerMode, TerminalColor
 from girder.utility import config, mkdir
 from girder.utility._cache import cache, requestCache, rateLimitBuffer
 
@@ -70,6 +71,15 @@ class LogFormatter(logging.Formatter):
                     or record.name.startswith('cherrypy.error')):
                 return record.message
         return super().format(record, *args, **kwargs)
+
+
+def formatExceptionLog(e):
+    if config.getServerMode() == ServerMode.PRODUCTION:
+        return f"{type(e).__name__}: {str(e)} in " \
+            f"{os.path.basename(inspect.trace()[-1][0].f_code.co_filename)} " \
+            f"at line {inspect.trace()[-1][0].f_lineno}"
+    else:
+        return traceback.format_exc()
 
 
 class StreamToLogger:
