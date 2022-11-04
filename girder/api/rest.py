@@ -18,7 +18,7 @@ import fnmatch
 from dogpile.cache.util import kwarg_function_key_generator
 
 from . import docs
-from girder import auditLogger, events, logger, logprint
+from girder import auditLogger, events, formatExceptionLog, logger, logprint
 from girder.constants import TokenScope, SortDir, ServerMode
 from girder.exceptions import AccessException, GirderException, ValidationException, RestException
 from girder.models.setting import Setting
@@ -527,6 +527,18 @@ def _createResponse(val):
                       cls=JsonEncoder).encode('utf8')
 
 
+def _logRequestError(e):
+    """
+    Log an error with its traceback in dev mode, or with the file name and line number in
+    production mode.
+    """
+    # The noLogException attribute in the request can be used to disable logging for certain types
+    # of exceptions.
+    if not hasattr(cherrypy.request, 'noLogExceptions') \
+            or type(e) not in cherrypy.request.noLogExceptions:
+        logprint.error(formatExceptionLog(e))
+
+
 def _handleRestException(e):
     # Handle all user-error exceptions from the REST layer
     cherrypy.response.status = e.code
@@ -641,31 +653,36 @@ def endpoint(fun):
         cherrypy.lib.caching.expires(0)
 
         try:
-            _preventRepeatedParams(params)
+            try:
+                _preventRepeatedParams(params)
 
-            val = fun(self, path, params)
+                val = fun(self, path, params)
 
-            # If this is a partial response, we set the status appropriately
-            if 'Content-Range' in cherrypy.response.headers:
-                cherrypy.response.status = 206
+                # If this is a partial response, we set the status appropriately
+                if 'Content-Range' in cherrypy.response.headers:
+                    cherrypy.response.status = 206
 
-            val = _mongoCursorToList(val)
+                val = _mongoCursorToList(val)
 
-            if callable(val):
-                # If the endpoint returned anything callable (function,
-                # lambda, functools.partial), we assume it's a generator
-                # function for a streaming response.
-                cherrypy.response.stream = True
-                _logRestRequest(self, path, params)
-                return val()
+                if callable(val):
+                    # If the endpoint returned anything callable (function,
+                    # lambda, functools.partial), we assume it's a generator
+                    # function for a streaming response.
+                    cherrypy.response.stream = True
+                    _logRestRequest(self, path, params)
+                    return val()
 
-            if isinstance(val, cherrypy.lib.file_generator):
-                # Don't do any post-processing of static files
-                return val
+                if isinstance(val, cherrypy.lib.file_generator):
+                    # Don't do any post-processing of static files
+                    return val
 
-            if isinstance(val, types.GeneratorType):
-                val = list(val)
-
+                if isinstance(val, types.GeneratorType):
+                    val = list(val)
+            except Exception as e:
+                # In any exception, log it then re-raise it to let the already existing handlers do
+                # their job.
+                _logRequestError(e)
+                raise
         except RestException as e:
             val = _handleRestException(e)
         except AccessException as e:
@@ -680,7 +697,14 @@ def endpoint(fun):
             # These are unexpected failures; send a 500 status
             logger.exception('500 Error')
             cherrypy.response.status = 500
-            val = dict(type='internal', uid=cherrypy.request.girderRequestUid)
+
+            val = dict(type='internal')
+            # Prevent error in error formatting if the request does not come from the Girder web
+            # app (the girderRequestUID has been removed from the Viewer app for security purposes)
+            try:
+                val['uid'] = cherrypy.request.girderRequestUid
+            except AttributeError:
+                pass
 
             if config.getServerMode() == ServerMode.PRODUCTION:
                 # Sanitize errors in production mode
