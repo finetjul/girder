@@ -77,7 +77,8 @@ def formatExceptionLog(e):
     if config.getServerMode() == ServerMode.PRODUCTION:
         return f"{type(e).__name__}: {str(e)} in " \
             f"{os.path.basename(inspect.trace()[-1][0].f_code.co_filename)} " \
-            f"at line {inspect.trace()[-1][0].f_lineno}"
+            f"at line {inspect.trace()[-1][0].f_lineno} while requesting " \
+            f"{cherrypy.request.path_info}"
     else:
         return traceback.format_exc()
 
