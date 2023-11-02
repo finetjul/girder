@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from girder.sessions import PatchedCherrypySession  # noqa: F401
 from pkg_resources import DistributionNotFound, get_distribution
 
 try:
