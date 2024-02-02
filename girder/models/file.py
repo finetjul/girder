@@ -24,7 +24,7 @@ class File(acl_mixin.AccessControlMixin, Model):
 
         self.name = 'file'
         self.ensureIndices(
-            ['itemId', 'assetstoreId', 'exts']
+            ['itemId', 'assetstoreId', 'exts', 'identifier']
             + assetstore_utilities.fileIndexFields())
         self.ensureTextIndex({'name': 1})
         self.resourceColl = 'item'
