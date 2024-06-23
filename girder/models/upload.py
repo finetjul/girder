@@ -232,7 +232,7 @@ class Upload(Model):
             self.remove(upload)
 
         logger.info('Upload complete. Upload=%s File=%s User=%s' % (
-            upload['_id'], file['_id'], upload['userId']))
+            upload.get('_id'), file['_id'], upload['userId']))
 
         # Add an async event for handlers that wish to process this file.
         eventParams = {
